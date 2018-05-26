@@ -5,7 +5,7 @@ const port = 9021;
 const fileStackMap = {};
 let startStack = [];
 let maxMemory = 40000000; // File transfer limit is 40MB
-const chunkSize = 10000; // 10 KB per request transfer limit
+const chunkSize = 20000; // 20 KB per request transfer limit
 
 const allocateBytes = function() {
     if(maxMemory < chunkSize){
