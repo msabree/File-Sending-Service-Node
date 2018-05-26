@@ -9,6 +9,7 @@
   "author": "Makeen Sabree",
   "license": "ISC",
   "dependencies": {
-    "request": "^2.87.0"
+    "request": "^2.87.0",
+    "shelljs": "^0.8.2"
   }
 }

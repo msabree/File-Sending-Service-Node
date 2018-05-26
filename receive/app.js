@@ -1,5 +1,6 @@
 const request = require('request');
 const fs = require('fs');
+const shell = require('shelljs');
 
 const READ_INTERVAL_MS = 1000; // Read a chunk every second
 
@@ -55,6 +56,7 @@ const addToStack = function(bytes, fileSize) {
 }
 
 const exhaustStack = function(path, fileName) {
+    shell.mkdir('-p', path);
     while(writeStack.length > 0){
         let bytes = writeStack.shift();
         fs.appendFileSync(`${path}/${fileSuffix}_${fileName}`, Buffer.from(bytes, 'binary'));

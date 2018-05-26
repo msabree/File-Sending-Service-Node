@@ -1,7 +1,14 @@
 const http = require('http');
 
+const commandLineArgs = process.argv.slice(2);
+let tcpPort = commandLineArgs[0];
+if(tcpPort === undefined){
+    tcpPort = 9021;
+}
+tcpPort = tcpPort.replace(':', '');
+
 const hostname = '127.0.0.1';
-const port = 9021;
+const port = parseInt(tcpPort);
 const fileStackMap = {};
 let startStack = [];
 let maxMemory = 40000000; // File transfer limit is 40MB
