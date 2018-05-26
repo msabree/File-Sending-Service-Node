@@ -1,6 +1,6 @@
 # File Sending Service
 
-This app allows for a user to search for a title by name.
+A file sending service written in NodeJS. 
 
 ### Prerequisites
 
@@ -12,33 +12,33 @@ https://nodejs.org/en/download/
 
 Clone or fork the repo and cd into the root directory of the project.
 
-To setup the #relay module run the following commands from root dir:
+To setup the relay module run the following commands from root dir:
 
-cd relay
+    cd relay
 
-node app.js :<port>
+    node app.js :<port>
 
 The relay server is now ready to transfer files.
 
 
-To setup the #send module run the following commands from root dir:
+To setup the send module run the following commands from root dir:
 
-cd send
+    cd send
 
-npm install
+    npm install
 
-node app.js <host-and-port> <file-name>
+    node app.js <host-and-port> <file-name>
 
 This will output a secret code o be used by the reeive module program.
 
 
-To setup the #receive module run the following commands from root dir:
+To setup the receive module run the following commands from root dir:
 
-cd receive
+    cd receive
 
-npm install
+    npm install
 
-node app.js <host-and-port> <secret-code> <output-dir>
+    node app.js <host-and-port> <secret-code> <output-dir>
 
 This will initiate the transaction.
 
