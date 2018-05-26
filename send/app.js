@@ -2,10 +2,10 @@ const request = require('request');
 const fs = require('fs');
 
 const commandLineArgs = process.argv.slice(2);
-const hostAndPort = commandLineArgs[0];
+let hostAndPort = commandLineArgs[0];
 const filePath = commandLineArgs[1];
 
-const SEND_INTERVAL_MS = 2500; // Send a chunk every 2 and half seconds
+const SEND_INTERVAL_MS = 1000; // Send a chunk every second
 
 let readStart = 0;
 
@@ -50,7 +50,7 @@ const confirmStartSend = function() {
     })
 }
 
-const sendBytes = function(bytes) {  
+const sendBytes = function(bytes, fileSize) {  
     const filePathArray = filePath.split('/'); 
     return new Promise((resolve, reject) => {
         const options = {
@@ -60,7 +60,8 @@ const sendBytes = function(bytes) {
             body: JSON.stringify({
                 bytes: Buffer.from(bytes).toString('binary'),
                 code,
-                fileName: filePathArray[filePathArray.length - 1]
+                fileName: filePathArray[filePathArray.length - 1],
+                fileSize,
             })
         }
         request(options, (err, res, body) => {
@@ -73,27 +74,29 @@ const sendBytes = function(bytes) {
     })
 }
 
-const startSending = function(fileBuff) {
+const startSending = function(fileBuff, fileSize) {
 
     let done = false;
+    let fileBufferToRead = fileBuff;
 
     const intervalId = setInterval(function(){
         getAvailableBytes()
         .then((res) => {
             let bytesToSend = 0;
-            if(res.bytes > fileBuff.length){
-                bytesToSend = fileBuff;
+            if(res.bytes > fileBufferToRead.length){
+                bytesToSend = fileBufferToRead.slice(0, fileBufferToRead.length);
                 done = true;
             }
             else{
-                bytesToSend = fileBuff.slice(0, res.bytes);
+                bytesToSend = fileBufferToRead.slice(0, res.bytes);
+                fileBufferToRead = fileBufferToRead.slice(res.bytes, fileBufferToRead.length);
             }
     
-            return sendBytes(bytesToSend);
+            return sendBytes(bytesToSend, fileSize);
         })
         .then(() => {
             if(done === true){
-                sendBytes('')
+                sendBytes('', fileSize)
                 .then(() => {
                     clearInterval(intervalId);
                     process.exit();
@@ -112,6 +115,9 @@ if(hostAndPort === undefined){
     process.exit();
 }
 
+// trim trailing slash
+hostAndPort = hostAndPort.replace(/\/$/, "");
+
 if(filePath === undefined){
     console.log('A file path is required. Ex -> ./sample.txt');
     process.exit();
@@ -119,6 +125,7 @@ if(filePath === undefined){
 
 // Read the file into memory
 const fileBuffer = fs.readFileSync(filePath);
+const origLen = fileBuffer.length;
 
 // Log the code to the sender to share
 console.log(code);
@@ -127,7 +134,7 @@ const intervalId = setInterval(function(){
     confirmStartSend()
     .then((res) => {
         if(res.start === true){
-            startSending(fileBuffer)
+            startSending(fileBuffer, origLen)
             clearInterval(intervalId);
         }
     })

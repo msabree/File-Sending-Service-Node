@@ -1,7 +1,7 @@
 const request = require('request');
 const fs = require('fs');
 
-const READ_INTERVAL_MS = 2500; // Read a chunk every 2 and half seconds
+const READ_INTERVAL_MS = 1000; // Read a chunk every second
 
 const commandLineArgs = process.argv.slice(2);
 const hostAndPort = commandLineArgs[0];
@@ -9,6 +9,9 @@ const secretCode = commandLineArgs[1];
 const outputPath = commandLineArgs[2];
 
 const writeStack = [];
+const fileSuffix = new Date().getTime(); // ensure filename uniqueness
+let bytesRead = 0;
+let lastPercent = 0;
 
 // Send the code to initiate the file transfer
 const initiateTransfer = function(code) {
@@ -35,14 +38,26 @@ const getNextChunk = function(code) {
     })
 }
 
-const addToStack = function(bytes) {
+const addToStack = function(bytes, fileSize) {
+    bytesRead += bytes.length;
     writeStack.push(bytes);
+
+    let percent = Math.round((bytesRead/fileSize) * 100);
+    if(percent > 100){
+        percent = 100;
+    }
+
+    if(percent !== lastPercent){
+        // calculate percent downloaded
+        lastPercent = percent;
+        process.stdout.write(`Percent downloaded: ${percent}% \r`)
+    }
 }
 
 const exhaustStack = function(path, fileName) {
     while(writeStack.length > 0){
         let bytes = writeStack.shift();
-        fs.appendFileSync(`${path}/${fileName}`, Buffer.from(bytes, 'binary'));
+        fs.appendFileSync(`${path}/${fileSuffix}_${fileName}`, Buffer.from(bytes, 'binary'));
     }
 }
 
@@ -71,7 +86,7 @@ initiateTransfer(secretCode)
                 process.exit();
             }
             else if(res.bytes !== undefined){
-                addToStack(res.bytes);
+                addToStack(res.bytes, res.fileSize);
                 exhaustStack(outputPath, res.fileName)
             }
         })

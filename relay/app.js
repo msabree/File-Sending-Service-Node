@@ -5,7 +5,7 @@ const port = 9021;
 const fileStackMap = {};
 let startStack = [];
 let maxMemory = 40000000; // File transfer limit is 40MB
-const chunkSize = 1000000; // 1 MB per request transfer limit
+const chunkSize = 10000; // 10 KB per request transfer limit
 
 const allocateBytes = function() {
     if(maxMemory < chunkSize){
@@ -49,6 +49,7 @@ const server = http.createServer((req, res) => {
         const code = req.url.split('code=')[1];
         const bytes = fileStackMap[code].bytes.shift();
         const fileName = fileStackMap[code].metadata.fileName;
+        const fileSize = fileStackMap[code].metadata.fileSize;
         maxMemory += chunkSize;
 
         if(bytes === ''){
@@ -61,6 +62,7 @@ const server = http.createServer((req, res) => {
             bytes,
             done: bytes === '',
             fileName,
+            fileSize,
         }));
         res.end();
     }
@@ -77,6 +79,7 @@ const server = http.createServer((req, res) => {
             // store bytes in stack map
             fileStackMap[reqJson.code.trim().toLowerCase()].bytes.push(reqJson.bytes);
             fileStackMap[reqJson.code.trim().toLowerCase()].metadata['fileName'] = reqJson.fileName;
+            fileStackMap[reqJson.code.trim().toLowerCase()].metadata['fileSize'] = reqJson.fileSize;
         });
 
         res.statusCode = 200;
