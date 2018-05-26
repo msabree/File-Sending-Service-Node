@@ -82,17 +82,22 @@ const startSending = function(fileBuff, fileSize) {
     const intervalId = setInterval(function(){
         getAvailableBytes()
         .then((res) => {
-            let bytesToSend = 0;
-            if(res.bytes > fileBufferToRead.length){
-                bytesToSend = fileBufferToRead.slice(0, fileBufferToRead.length);
-                done = true;
+            if(res.bytes === 0){
+                return Promise.resolve(); // wait for available memory on server
             }
             else{
-                bytesToSend = fileBufferToRead.slice(0, res.bytes);
-                fileBufferToRead = fileBufferToRead.slice(res.bytes, fileBufferToRead.length);
+                let bytesToSend = 0;
+                if(res.bytes > fileBufferToRead.length){
+                    bytesToSend = fileBufferToRead.slice(0, fileBufferToRead.length);
+                    done = true;
+                }
+                else{
+                    bytesToSend = fileBufferToRead.slice(0, res.bytes);
+                    fileBufferToRead = fileBufferToRead.slice(res.bytes, fileBufferToRead.length);
+                }
+        
+                return sendBytes(bytesToSend, fileSize);
             }
-    
-            return sendBytes(bytesToSend, fileSize);
         })
         .then(() => {
             if(done === true){
