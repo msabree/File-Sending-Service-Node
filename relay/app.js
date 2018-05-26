@@ -36,7 +36,10 @@ const server = http.createServer((req, res) => {
     else if(req.url.startsWith('/initiate')){
         const code = req.url.split('code=')[1];
         startStack.push(code.trim().toLowerCase());
-        fileStackMap[code.trim().toLowerCase()] = [];
+        fileStackMap[code.trim().toLowerCase()] = {
+            metadata: {},
+            bytes: [],
+        };
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
         res.write(JSON.stringify({}));
@@ -44,7 +47,8 @@ const server = http.createServer((req, res) => {
     }
     else if(req.url.startsWith('/read')){
         const code = req.url.split('code=')[1];
-        const bytes = fileStackMap[code].shift();
+        const bytes = fileStackMap[code].bytes.shift();
+        const fileName = fileStackMap[code].metadata.fileName;
         maxMemory += chunkSize;
 
         if(bytes === ''){
@@ -55,7 +59,8 @@ const server = http.createServer((req, res) => {
         res.setHeader('Content-Type', 'application/json');
         res.write(JSON.stringify({
             bytes,
-            done: bytes === ''
+            done: bytes === '',
+            fileName,
         }));
         res.end();
     }
@@ -70,7 +75,8 @@ const server = http.createServer((req, res) => {
                 reqJson = JSON.parse(reqJson);
             }
             // store bytes in stack map
-            fileStackMap[reqJson.code.trim().toLowerCase()].push(reqJson.bytes);
+            fileStackMap[reqJson.code.trim().toLowerCase()].bytes.push(reqJson.bytes);
+            fileStackMap[reqJson.code.trim().toLowerCase()].metadata['fileName'] = reqJson.fileName;
         });
 
         res.statusCode = 200;

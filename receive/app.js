@@ -39,14 +39,10 @@ const addToStack = function(bytes) {
     writeStack.push(bytes);
 }
 
-// to do: pass a filename
 const exhaustStack = function(path, fileName) {
-    if(fileName === undefined){
-        fileName = 'transfer_' + new Date().getTime();
-    }
     while(writeStack.length > 0){
         let bytes = writeStack.shift();
-        fs.appendFileSync(`${path}/${fileName}`, Buffer.from(bytes));
+        fs.appendFileSync(`${path}/${fileName}`, Buffer.from(bytes, 'binary'));
     }
 }
 

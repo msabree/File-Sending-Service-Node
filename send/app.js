@@ -50,15 +50,17 @@ const confirmStartSend = function() {
     })
 }
 
-const sendBytes = function(bytes) {    
+const sendBytes = function(bytes) {  
+    const filePathArray = filePath.split('/'); 
     return new Promise((resolve, reject) => {
         const options = {
             uri: `${hostAndPort}/send`,
             method: 'POST',
             json: true,
             body: JSON.stringify({
-                bytes: Buffer.from(bytes).toString('utf-8'),
+                bytes: Buffer.from(bytes).toString('binary'),
                 code,
+                fileName: filePathArray[filePathArray.length - 1]
             })
         }
         request(options, (err, res, body) => {
