@@ -1,0 +1,14 @@
+{
+  "name": "receive",
+  "version": "1.0.0",
+  "description": "A module to receive files.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Makeen Sabree",
+  "license": "ISC",
+  "dependencies": {
+    "request": "^2.87.0"
+  }
+}
